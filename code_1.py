@@ -35,6 +35,29 @@ minhash_signature = minhash(file,num_hashes)
 print(minhash_signature)
 
 
+def lsh(minhash_signature, num_hashes, similarity_threshold):
+    num_users = minhash_signature.shape[0]
+    num_bands = 50
+    band_size = num_hashes // num_bands
+    candidate_pairs = set()
+    for i in range(num_bands):
+        band = minhash_signature[:,i*band_size:(i+1)*band_size]
+        hash_band = [hash(tuple(row)) for row in band]
+        hash_table = {}
+        for j in range(num_users):
+            if hash_band[j] in hash_table:
+                hash_table[hash_band[j]].append(j)
+            else:
+                hash_table[hash_band[j]] = [j]
+        for key in hash_table:
+            if len(hash_table[key]) > 1:
+                for pair in itertools.combinations(hash_table[key],2):
+                    candidate_pairs.add(pair)
+    return candidate_pairs
+
+candidate_pairs = lsh(minhash_signature, num_hashes, similarity_threshold)
+print(candidate_pairs)
+
 
 
 
