@@ -2,14 +2,28 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy 
 
-file  = np.load('user_movie_rating.npy')
-user_id = file[:,0]
-movie_id = file[:,1]
-rating = file[:,2]
+# file  = np.load('user_movie_rating.npy')
+# user_id = file[:,0]
+# movie_id = file[:,1]
+# rating = file[:,2]
 
-similarity_threshold = 0.5
+# similarity_threshold = 0.5
 
-print(file)
+# print(file)
+
+def create_matrix(file):
+    num_users = len(np.unique(file[:,0]))
+    num_movies = len(np.unique(file[:,1]))
+    matrix = np.zeros((num_users,num_movies))
+    for i in range(file.shape[0]):
+        matrix[int(file[i,0])-1,int(file[i,1])-1] = file[i,2]
+    return matrix
+
+# martrix = create_matrix(file)   
+# print(martrix)
+
+
+
 
 def jaccard_similarity(user1, user2):
     intersection = len(np.intersect1d(user1, user2))
@@ -17,22 +31,29 @@ def jaccard_similarity(user1, user2):
     return intersection / union
     # return np.dot(user1, user2) / (np.linalg.norm(user1) * np.linalg.norm(user2)) # cosine similarity
 
-def minhash(data,num_hashes):
+mat = np.array([[1, 1, 0, 1], 
+                [0, 1, 1, 1], 
+                [1, 0, 0, 1]])
+
+random_matrix = np.random.randint(2, size=(10, 10))
+print(random_matrix)
+
+def minhash(data, num_permutations):
     num_movies = data.shape[1]
-    permutations = [np.random.permutation(num_movies) for _ in range(num_hashes)]
-    minhash_signature = np.full((data.shape[0],num_hashes), np.inf)
+    permutations = [np.random.permutation(num_movies) for _ in range(num_permutations)]
+    perm_signature = np.full((data.shape[0], num_permutations), np.inf)
 
-    for i in range(data.shape[0]):
-        for j in range(num_movies):
-            if data[i,j] == 1:
-                for k in range(num_hashes):
-                    if permutations[k][j] < minhash_signature[i,k]:
-                        minhash_signature[i,k] = permutations[k][j]
-    return minhash_signature
+    for i in range(num_movies):
+        for j in range(data.shape[0]):
+            if data[i, j] == 1:
+                for k in range(num_permutations):
+                    if permutations[k][j] < perm_signature[i, k]:
+                        perm_signature[i, k] = permutations[k][j]
+    return perm_signature.transpose()
 
-num_hashes = 100
-minhash_signature = minhash(file,num_hashes)
-print(minhash_signature)
+num_permutations = 3
+signature = minhash(random_matrix,num_permutations)
+print(signature)
 
 
 def lsh(minhash_signature, num_hashes, similarity_threshold):
@@ -55,8 +76,8 @@ def lsh(minhash_signature, num_hashes, similarity_threshold):
                     candidate_pairs.add(pair)
     return candidate_pairs
 
-candidate_pairs = lsh(minhash_signature, num_hashes, similarity_threshold)
-print(candidate_pairs)
+# candidate_pairs = lsh(minhash_signature, num_hashes, similarity_threshold)
+# print(candidate_pairs)
 
 
 
