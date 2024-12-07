@@ -57,6 +57,8 @@ def lsh(signatures, num_hashes, num_bands, similarity_threshold):
                 buckets[band_hash] = []
             buckets[band_hash].append(user_id)
 
+    print(buckets)
+
     candidate_pairs = set()
     for bucket_users in buckets.values():
         for i in range(len(bucket_users)):
@@ -79,7 +81,7 @@ def write_to_txt(similar_users):
 
 def main(seed):
     data  = np.load('user_movie_rating.npy')
-    similarity_threshold = 100
+    similarity_threshold = 0.5
 
     user_movie_matrix = create_matrix(data)
     #delete the first row and column since they are empty
